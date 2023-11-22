@@ -96,21 +96,17 @@ public class Render : MonoBehaviour
     void Update()
     {
         // For pointclouds
-        RenderParams rp = new RenderParams(material);
-        rp.worldBounds = new Bounds(Vector3.zero, 10000*Vector3.one); // use tighter bounds
-        rp.matProps = new MaterialPropertyBlock();
-        rp.matProps.SetBuffer("_Triangles", meshTriangles);
-        rp.matProps.SetBuffer("_Positions", meshPositions);
-        rp.matProps.SetBuffer("_VertexPositions", vertexPositions);
-        rp.matProps.SetInt("_StartIndex", (int)mesh.GetIndexStart(0));
-        rp.matProps.SetInt("_BaseVertexIndex", (int)mesh.GetBaseVertex(0));
-        rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(new Vector3(-4.5f, 0, 0)));
-        rp.matProps.SetFloat("_NumInstances", 10.0f);
-        Graphics.RenderPrimitives(rp, MeshTopology.Triangles, (int)mesh.GetIndexCount(0), pointsCount);
-   
-        // For surface
-        RenderParams srp = new RenderParams(surfaceMaterial);
-        srp.matProps = new MaterialPropertyBlock();
+        // RenderParams rp = new RenderParams(material);
+        // rp.worldBounds = new Bounds(Vector3.zero, 10000*Vector3.one); // use tighter bounds
+        // rp.matProps = new MaterialPropertyBlock();
+        // rp.matProps.SetBuffer("_Triangles", meshTriangles);
+        // rp.matProps.SetBuffer("_Positions", meshPositions);
+        // rp.matProps.SetBuffer("_VertexPositions", vertexPositions);
+        // rp.matProps.SetInt("_StartIndex", (int)mesh.GetIndexStart(0));
+        // rp.matProps.SetInt("_BaseVertexIndex", (int)mesh.GetBaseVertex(0));
+        // rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(new Vector3(-4.5f, 0, 0)));
+        // rp.matProps.SetFloat("_NumInstances", 10.0f);
+        // Graphics.RenderPrimitives(rp, MeshTopology.Triangles, (int)mesh.GetIndexCount(0), pointsCount);
     }
 
     private void GenerateSurface()
