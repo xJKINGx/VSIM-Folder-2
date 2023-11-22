@@ -31,6 +31,8 @@ public class Render : MonoBehaviour
     // Since we need more than a single variable of information to construct a triangle
     // it's easier to make a single list of structs instead multiple lists
     private List<TriangleInfo> triangles { get; set; }
+
+    private Vector2 minMaxHeight;
     void Awake()
     {
         GenerateSurface();
@@ -93,6 +95,7 @@ public class Render : MonoBehaviour
 
     void Update()
     {
+        // For pointclouds
         RenderParams rp = new RenderParams(material);
         rp.worldBounds = new Bounds(Vector3.zero, 10000*Vector3.one); // use tighter bounds
         rp.matProps = new MaterialPropertyBlock();
@@ -104,6 +107,10 @@ public class Render : MonoBehaviour
         rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.Translate(new Vector3(-4.5f, 0, 0)));
         rp.matProps.SetFloat("_NumInstances", 10.0f);
         Graphics.RenderPrimitives(rp, MeshTopology.Triangles, (int)mesh.GetIndexCount(0), pointsCount);
+   
+        // For surface
+        RenderParams srp = new RenderParams(surfaceMaterial);
+        srp.matProps = new MaterialPropertyBlock();
     }
 
     private void GenerateSurface()
@@ -127,6 +134,10 @@ public class Render : MonoBehaviour
         // Here we set the material of the meshRenderer to the surfaceMaterial given
         // in the inspector
         meshRenderer.sharedMaterial = surfaceMaterial;
+
+        // Debugging
+        Debug.Log("Min z-value: " + minMaxHeight[0]);
+        Debug.Log("Max z-value: " + minMaxHeight[1]);
     }
 
     // This function puts all indices of all triangles into a singular array
@@ -199,6 +210,7 @@ public class Render : MonoBehaviour
                 Debug.LogWarning("Could not make vertex of line " + i);
                 continue;
             }
+
             // i - 1 since we start at 1
             verts[i - 1] = new Vector3
             (
@@ -212,6 +224,27 @@ public class Render : MonoBehaviour
                 // The input file has the z-axis as upwards while unity uses the y-axis
                 // Swapping theses two values resolves the issue.
             );
+
+            // minMaxHeight[0] is the minimum value, [1] is the maximum value
+            if (i == 1)
+            {
+                // We first assume the first value we get is the min and max z-values
+                minMaxHeight[0] = verts[i - 1].y;
+                minMaxHeight[1] = verts[i - 1].y;
+            }
+            else
+            {
+                // Comparing the values of the following points to find the minmax z-values
+                if (verts[i - 1].y < minMaxHeight[0])
+                {
+                    minMaxHeight[0] = verts[i - 1].y;
+                }
+                else if (verts[i - 1].y > minMaxHeight[1])
+                {
+                    minMaxHeight[1] = verts[i - 1].y;
+                }
+                
+            }
         }
 
         // Setting the public vertices list to be equal to the verts array
