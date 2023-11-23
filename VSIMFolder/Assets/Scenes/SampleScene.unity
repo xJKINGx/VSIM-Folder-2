@@ -156,7 +156,7 @@ MonoBehaviour:
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   vertexData: {fileID: 4900000, guid: 4fab36049fc4ecd46973da5f79df7158, type: 3}
   indexData: {fileID: 4900000, guid: ff9ce8e88d3539e4489705981aec5b8a, type: 3}
-  surfaceMaterial: {fileID: 15303, guid: 0000000000000000f000000000000000, type: 0}
+  surfaceMaterial: {fileID: 2100000, guid: 1e61faf824eb298479d5788956b0dd33, type: 2}
 --- !u!4 &434997617
 Transform:
   m_ObjectHideFlags: 0

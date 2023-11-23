@@ -130,6 +130,7 @@ public class Render : MonoBehaviour
         // Here we set the material of the meshRenderer to the surfaceMaterial given
         // in the inspector
         meshRenderer.sharedMaterial = surfaceMaterial;
+        meshRenderer.sharedMaterial.SetFloat(Shader.PropertyToID("_Max_Height"), minMaxHeight[1]);
 
         // Debugging
         Debug.Log("Min z-value: " + minMaxHeight[0]);

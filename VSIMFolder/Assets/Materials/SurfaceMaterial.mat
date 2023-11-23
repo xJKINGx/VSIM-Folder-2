@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SurfaceMaterial
-  m_Shader: {fileID: 4800000, guid: 72df5868107c43e4a8a9460b814b833a, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: 45e8fb9e20676c4419d0d0af15dede70, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -24,6 +24,12 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
-    m_Floats: []
-    m_Colors: []
+    m_Floats:
+    - _BUILTIN_QueueControl: 0
+    - _BUILTIN_QueueOffset: 0
+    - _Intensity: 1
+    - _WaterHeight: 0
+    - _Water_height: -45
+    m_Colors:
+    - _WaterHeight: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
