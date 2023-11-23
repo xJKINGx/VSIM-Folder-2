@@ -8,12 +8,14 @@ using UnityEngine.AI;
 using System;
 using UnityEngine.Rendering;
 using TMPro;
+using System.Runtime.CompilerServices;
+using UnityEditor.VersionControl;
 
-public class Render : MonoBehaviour
+public class SurfaceScript : MonoBehaviour
 {
-    int pointsCount;
+    //int pointsCount;
 
-    string terrainPath = @"D:\Github Clones\VSIM-Folder\VSIMFolder\Assets\Height Data\vertices.txt";
+    //string terrainPath = @"D:\Github Clones\VSIM-Folder\VSIMFolder\Assets\Height Data\vertices.txt";
 
     GraphicsBuffer meshTriangles;
     GraphicsBuffer vertexPositions;
@@ -32,7 +34,7 @@ public class Render : MonoBehaviour
     // it's easier to make a single list of structs instead multiple lists
     private List<TriangleInfo> triangles { get; set; }
 
-    private Vector2 minMaxHeight;
+    private SurfaceBounds bounds;
     void Awake()
     {
         GenerateSurface();
@@ -130,11 +132,14 @@ public class Render : MonoBehaviour
         // Here we set the material of the meshRenderer to the surfaceMaterial given
         // in the inspector
         meshRenderer.sharedMaterial = surfaceMaterial;
-        meshRenderer.sharedMaterial.SetFloat(Shader.PropertyToID("_Max_Height"), minMaxHeight[1]);
+        
+        // Here we're giving the graph shader the maximum height value
+        // This is needed to give the correct colors to the surface
+        meshRenderer.sharedMaterial.SetFloat(Shader.PropertyToID("_Max_Height"), bounds.yMax);
 
         // Debugging
-        Debug.Log("Min z-value: " + minMaxHeight[0]);
-        Debug.Log("Max z-value: " + minMaxHeight[1]);
+        Debug.Log("Min z-value: " + bounds.yMin);
+        Debug.Log("Max z-value: " + bounds.yMax);
     }
 
     // This function puts all indices of all triangles into a singular array
@@ -221,31 +226,51 @@ public class Render : MonoBehaviour
                 // The input file has the z-axis as upwards while unity uses the y-axis
                 // Swapping theses two values resolves the issue.
             );
-
-            // minMaxHeight[0] is the minimum value, [1] is the maximum value
-            if (i == 1)
-            {
-                // We first assume the first value we get is the min and max z-values
-                minMaxHeight[0] = verts[i - 1].y;
-                minMaxHeight[1] = verts[i - 1].y;
-            }
-            else
-            {
-                // Comparing the values of the following points to find the minmax z-values
-                if (verts[i - 1].y < minMaxHeight[0])
-                {
-                    minMaxHeight[0] = verts[i - 1].y;
-                }
-                else if (verts[i - 1].y > minMaxHeight[1])
-                {
-                    minMaxHeight[1] = verts[i - 1].y;
-                }
-                
-            }
         }
 
         // Setting the public vertices list to be equal to the verts array
         vertices = verts.ToList();
+
+        // Here we fill the bounds struct, this will mostly be needed for 
+        // calculating barycentric coordinates
+	    float xMin = 0.0f, yMin = 0.0f, zMin = 0.0f, x, y, z, res = 0.0f;
+	    float xMax = 0.0f, yMax = 0.0f, zMax = 0.0f;
+
+        for (int i = 0; i < verticesAmount; i++)
+        {
+            // We assign the current values to the x, y and z variables
+            x = vertices[i].x;
+            y = vertices[i].y;
+            z = vertices[i].z;
+
+            // if this is the first run through, we assume the first values are both
+            // the smallest and the largest values that exist
+            if (i == 0)
+            {
+                xMax = xMin = x;
+                yMax = yMin = y;
+                zMax = zMin = z;
+            }
+            // if we can reach this if sentence that means there are at least 2 points
+            // we can then find the resolution/step length 
+            if (i == 1)
+            {
+                res = vertices[i].z - vertices[0].z;
+            }
+
+            // Here we check the different values to find the largest and smallest ones
+            // The ternary oparator makes it work like this:
+            // if xMax is less than x, then set xMax to x, otherwise keep xMax the way it is
+            xMax = xMax < x ? x : xMax;
+            xMin = xMin > x ? x : xMin;
+            yMax = yMax < y ? y : yMax;
+            yMin = yMin > y ? y : yMin;
+            zMax = zMax < z ? z : zMax;
+            zMin = zMin > z ? z : zMin;
+        }
+
+        // Here we set the bounds variable with the values we've found
+        bounds = new SurfaceBounds(xMax, xMin, yMax, yMin, zMax, zMin, res);
     }
 
     // FetchIndices works very similarly to the FetchVertices function
@@ -297,4 +322,55 @@ public class Render : MonoBehaviour
         // After the calculation we return the result
         return normal;
     }
+
+    public CollisionInfo CalcBaryCoords(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 pos)
+    {
+        Vector3 a = new Vector3(0, 0, 0);
+        Vector3 b = new Vector3(0, 0, 0);
+
+        // First we need to find which grid cell the position is in
+        int i = (int)(pos.x / 2.5f); // i is used for the x-axis
+        int j = (int)(pos.z / 2.5f); // j is used for the z-axis
+
+        i = i < 0 ? i : 0;
+        i = i > 1 ? i : 1;
+        j = j < 0 ? j : 0;
+        j = j > 1 ? j : 1;
+
+        Vector3 v10 = v1 - v0;
+        Vector3 v20 = v2 - v0;
+
+        float area = Vector3.Cross(v10, v20).z;
+
+        Vector3 v0p = v0 - pos;
+        Vector3 v1p = v1 - pos;
+        Vector3 v2p = v2 - pos;
+
+        float u = Vector3.Cross(v0p, v1p).z / area;
+        float v = Vector3.Cross(v1p, v2p).z / area;
+        float w = Vector3.Cross(v2p, v0p).z / area;
+
+        int neighbourIndex = 0;
+
+        if (u < 0 || v < 0 || w < 0)
+        {
+            // The position given is not within the current triangle
+
+            // Find out which neighbour the object might be in
+            if (u < v) { neighbourIndex = 0; }
+            else if (v < w) { neighbourIndex = 1; }
+            else {neighbourIndex = 2; }
+        }
+
+        return new CollisionInfo(a, b, 1);
+    }
+
+    // pos is Vector2 since we don't know the height, we therefore pass the x- and z-values
+    // into the function
+    public float FetchHeight(Vector2 pos)
+    {
+        
+        return 0.0f;
+    }
+
 }
