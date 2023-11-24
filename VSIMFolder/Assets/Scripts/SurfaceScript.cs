@@ -323,46 +323,34 @@ public class SurfaceScript : MonoBehaviour
         return normal;
     }
 
-    public CollisionInfo CalcBaryCoords(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 pos)
+    public Vector3 CalcBaryCoords(Vector3 v0, Vector3 v1, Vector3 v2, Vector3 pos)
     {
-        Vector3 a = new Vector3(0, 0, 0);
-        Vector3 b = new Vector3(0, 0, 0);
-
-        // First we need to find which grid cell the position is in
-        int i = (int)(pos.x / 2.5f); // i is used for the x-axis
-        int j = (int)(pos.z / 2.5f); // j is used for the z-axis
-
-        i = i < 0 ? i : 0;
-        i = i > 1 ? i : 1;
-        j = j < 0 ? j : 0;
-        j = j > 1 ? j : 1;
-
         Vector3 v10 = v1 - v0;
         Vector3 v20 = v2 - v0;
 
-        float area = Vector3.Cross(v10, v20).z;
+        // Here we treat v10 and v20 as 2D vectors instead of 3D since the height
+        // isn't important. Here's an example:
+        // v10  v20 
+        // 4    10    x-value
+        // 11   -4    y-value
+        // -4   15    z-value
+        // Since we ignore the y-value, we can find the 2x2 determinant of the x- and z-values
+        // |  4 10 | = 4 * 15 - 10 * (-4) = v10.x * v20.z - v20.x * v10.z
+        // | -4 15 |
+
+        float area = v10.x * v20.z - v20.x * v10.z; 
 
         Vector3 v0p = v0 - pos;
         Vector3 v1p = v1 - pos;
-        Vector3 v2p = v2 - pos;
 
-        float u = Vector3.Cross(v0p, v1p).z / area;
-        float v = Vector3.Cross(v1p, v2p).z / area;
-        float w = Vector3.Cross(v2p, v0p).z / area;
+        // We'll use the same logic as earlier for the cross product
+        float u = (v0p.x * v10.z - v10.x * v0p.z) / area;
+        float v = (v0p.x * v20.z - v20.x * v0p.z) / area;
+        float w = 1.0f - u - v; // Using the fact that u + v + w = 1 to find w
 
-        int neighbourIndex = 0;
+        Vector3 uvw = new Vector3(u, v, w);
 
-        if (u < 0 || v < 0 || w < 0)
-        {
-            // The position given is not within the current triangle
-
-            // Find out which neighbour the object might be in
-            if (u < v) { neighbourIndex = 0; }
-            else if (v < w) { neighbourIndex = 1; }
-            else {neighbourIndex = 2; }
-        }
-
-        return new CollisionInfo(a, b, 1);
+        return uvw;
     }
 
     // pos is Vector2 since we don't know the height, we therefore pass the x- and z-values
@@ -371,6 +359,79 @@ public class SurfaceScript : MonoBehaviour
     {
         
         return 0.0f;
+    }
+
+    public CollisionInfo CheckCollision(Vector3 pos)
+    {
+        // Here we check if we get collision to the surface based on the given position
+        // First we find out roughly where the position is on the surface
+
+        int cellsPerLine = (int)(bounds.xRange / bounds.resolution);
+        int i = (int)((pos.x - bounds.xMin) / bounds.resolution); // i is used for the x-axis
+        int j = (int)((pos.z - bounds.zMin) / bounds.resolution); // j is used for the z-axis
+
+        // (j * i * cellsPerLine) gives the square the position is in, we multiply this
+        // value by 2 since there are 2 triangles per cell
+        int triangleID = 2 * (j * i * cellsPerLine);
+
+        // Chcecking if the ID is out of bounds
+        triangleID = triangleID < 0 ? 0 : triangleID;
+        triangleID = triangleID > triangles.Count - 1 ? triangles.Count - 1 : triangleID;
+
+        // cTriangle is short for currentTriangle
+        TriangleInfo cTriangle = triangles[triangleID];
+
+        // Now that we've found our triangle, we are either spot on the correct triangle
+        // on the first try or we're extremely close and we need to check just once more
+
+        // We'll run through this recursively in case we're not in the triangle initially.
+        // We'll check neighbours and the neighbours' neighbours etc. to eventually
+        // reach the triangle we're in. 
+        // If we can't find the triangle we'll know we're out of bounds
+        while (true)
+        {
+            Vector3 v0 = vertices[cTriangle.indices[0]];
+            Vector3 v1 = vertices[cTriangle.indices[1]];
+            Vector3 v2 = vertices[cTriangle.indices[2]];
+            Vector3 uvw = CalcBaryCoords(v0, v1, v2, pos);
+
+            int neighbourIndex = 0;
+
+            // If this if check passes, the position is not in our cTriangle
+            if (uvw.x < 0 || uvw.y < 0 || uvw.z < 0)
+            {
+                // Here we set the index of the cTriangle's neighbours.
+                // The smallest barycentric coordinate shows the direction of the
+                // given position. 
+                if (uvw.x < uvw.y) {neighbourIndex = 0;}
+                else if (uvw.y < uvw.z) {neighbourIndex = 1;}
+                else {neighbourIndex = 2;}
+
+                // In the indices.txt file, if a neighbour is -1, it doesn't exist
+                // Here we check if there is a neighbour here
+                if (cTriangle.neighbours[neighbourIndex] >= 0)
+                {
+                    // If there is we set a new cTriangle
+                    cTriangle = triangles[cTriangle.neighbours[neighbourIndex]];
+                    continue; // We need this continue to make sure we don't return an empty vector
+                }
+                // If the value is -1 we know the position is out of bounds
+                return new CollisionInfo(Vector3.zero, Vector3.zero);
+            }
+            // If we didn't go into the if sentence the position given is inside our cTriangle
+            // We need to find the collision point and the normal vector of the triangle
+
+            // The normal is easy enough to get, we've calculated it when the triangle
+            // was initially created
+            Vector3 hNormal = cTriangle.surfaceUnitNormal;
+
+            // The position however, this needs to be calculated
+            // v0, v1 and v2 are Vector3s which get multiplied by the barycentric coordinates
+            // and then added together to get the collision point
+            Vector3 hPos = uvw.x * v0 + uvw.y * v1 + uvw.z * v2;
+
+            return new CollisionInfo(hPos, hNormal);
+        }
     }
 
 }
