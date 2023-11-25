@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6461020515351232022}
   - component: {fileID: 3659386148528414779}
   - component: {fileID: 6888449664673546322}
-  - component: {fileID: 4627462647644727366}
+  - component: {fileID: 5768298266315139730}
   m_Layer: 0
   m_Name: Raindrop
   m_TagString: Untagged
@@ -84,7 +84,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4627462647644727366
+--- !u!114 &5768298266315139730
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

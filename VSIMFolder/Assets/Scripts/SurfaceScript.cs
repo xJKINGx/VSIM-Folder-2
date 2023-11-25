@@ -316,8 +316,7 @@ public class SurfaceScript : MonoBehaviour
         Vector3 normal = new Vector3();
 
         // We do i1 - i0 and i2 - i0 to create the vectors between the points
-        // then we normalize the normal vector.
-        normal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]).normalized;
+        normal = Vector3.Cross(vertices[i1] - vertices[i0], vertices[i2] - vertices[i0]);
 
         // After the calculation we return the result
         return normal;
@@ -327,6 +326,7 @@ public class SurfaceScript : MonoBehaviour
     {
         Vector3 v10 = v1 - v0;
         Vector3 v20 = v2 - v0;
+        Vector3 v0p = pos - v0;
 
         // Here we treat v10 and v20 as 2D vectors instead of 3D since the height
         // isn't important. Here's an example:
@@ -340,13 +340,10 @@ public class SurfaceScript : MonoBehaviour
 
         float area = v10.x * v20.z - v20.x * v10.z; 
 
-        Vector3 v0p = v0 - pos;
-        Vector3 v1p = v1 - pos;
-
         // We'll use the same logic as earlier for the cross product
-        float u = (v0p.x * v10.z - v10.x * v0p.z) / area;
+        float w = (v0p.x * v10.z - v10.x * v0p.z) / area;
         float v = (v0p.x * v20.z - v20.x * v0p.z) / area;
-        float w = 1.0f - u - v; // Using the fact that u + v + w = 1 to find w
+        float u = 1.0f - v - w; // Using the fact that u + v + w = 1 to find w
 
         Vector3 uvw = new Vector3(u, v, w);
 
@@ -366,17 +363,17 @@ public class SurfaceScript : MonoBehaviour
         // Here we check if we get collision to the surface based on the given position
         // First we find out roughly where the position is on the surface
 
-        int cellsPerLine = (int)(bounds.xRange / bounds.resolution);
-        int i = (int)((pos.x - bounds.xMin) / bounds.resolution); // i is used for the x-axis
-        int j = (int)((pos.z - bounds.zMin) / bounds.resolution); // j is used for the z-axis
+        int cellsPerLine = Mathf.FloorToInt(bounds.zRange / bounds.resolution);
+        int i = Mathf.FloorToInt((pos.x - bounds.xMin) / bounds.resolution); // i is used for the x-axis
+        int j = Mathf.FloorToInt((pos.z - bounds.zMin) / bounds.resolution); // j is used for the z-axis
 
         // (j * i * cellsPerLine) gives the square the position is in, we multiply this
         // value by 2 since there are 2 triangles per cell
-        int triangleID = 2 * (j * i * cellsPerLine);
+        int triangleID = 2 * (j + i * cellsPerLine);
 
         // Chcecking if the ID is out of bounds
         triangleID = triangleID < 0 ? 0 : triangleID;
-        triangleID = triangleID > triangles.Count - 1 ? triangles.Count - 1 : triangleID;
+        triangleID = triangleID > triangles.Count - 1 ? 0: triangleID;
 
         // cTriangle is short for currentTriangle
         TriangleInfo cTriangle = triangles[triangleID];
@@ -388,6 +385,7 @@ public class SurfaceScript : MonoBehaviour
         // We'll check neighbours and the neighbours' neighbours etc. to eventually
         // reach the triangle we're in. 
         // If we can't find the triangle we'll know we're out of bounds
+        
         while (true)
         {
             Vector3 v0 = vertices[cTriangle.indices[0]];
@@ -403,7 +401,7 @@ public class SurfaceScript : MonoBehaviour
                 // Here we set the index of the cTriangle's neighbours.
                 // The smallest barycentric coordinate shows the direction of the
                 // given position. 
-                if (uvw.x < uvw.y) {neighbourIndex = 0;}
+                if (uvw.x < uvw.y && uvw.x < uvw.z) {neighbourIndex = 0;}
                 else if (uvw.y < uvw.z) {neighbourIndex = 1;}
                 else {neighbourIndex = 2;}
 
@@ -416,6 +414,7 @@ public class SurfaceScript : MonoBehaviour
                     continue; // We need this continue to make sure we don't return an empty vector
                 }
                 // If the value is -1 we know the position is out of bounds
+                Debug.Log("Object out of bounds!");
                 return new CollisionInfo(Vector3.zero, Vector3.zero);
             }
             // If we didn't go into the if sentence the position given is inside our cTriangle
