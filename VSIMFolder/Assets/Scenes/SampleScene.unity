@@ -155,7 +155,7 @@ MonoBehaviour:
   material: {fileID: 2100000, guid: e65d23b318d44e34ca2064cececa8eb8, type: 2}
   mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   vertexData: {fileID: 4900000, guid: 4fab36049fc4ecd46973da5f79df7158, type: 3}
-  indexData: {fileID: 4900000, guid: ff9ce8e88d3539e4489705981aec5b8a, type: 3}
+  indexData: {fileID: 4900000, guid: 21122000d3efb954b9230dffd690bf5c, type: 3}
   surfaceMaterial: {fileID: 2100000, guid: 1e61faf824eb298479d5788956b0dd33, type: 2}
 --- !u!4 &434997617
 Transform:
@@ -515,6 +515,10 @@ PrefabInstance:
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 5768298266315139730, guid: 7b444a87f39560d46a62b00c7279edeb, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5768298266315139730, guid: 7b444a87f39560d46a62b00c7279edeb, type: 3}
       propertyPath: surfaceRef
       value: 
       objectReference: {fileID: 434997615}
@@ -524,7 +528,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6461020515351232022, guid: 7b444a87f39560d46a62b00c7279edeb, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 100
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6461020515351232022, guid: 7b444a87f39560d46a62b00c7279edeb, type: 3}
       propertyPath: m_LocalPosition.z

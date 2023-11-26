@@ -341,7 +341,7 @@ public class SurfaceScript : MonoBehaviour
         float area = v10.x * v20.z - v20.x * v10.z; 
 
         // We'll use the same logic as earlier for the cross product
-        float w = (v0p.x * v10.z - v10.x * v0p.z) / area;
+        float w = (v10.x * v0p.z - v0p.x * v10.z) / area;
         float v = (v0p.x * v20.z - v20.x * v0p.z) / area;
         float u = 1.0f - v - w; // Using the fact that u + v + w = 1 to find w
 
@@ -391,19 +391,25 @@ public class SurfaceScript : MonoBehaviour
             Vector3 v0 = vertices[cTriangle.indices[0]];
             Vector3 v1 = vertices[cTriangle.indices[1]];
             Vector3 v2 = vertices[cTriangle.indices[2]];
+
+            //Debug.Log("V0: " + v0 + " | V1: " + v1 + " | V2: " + v2 + " | pos: " + pos);
+
             Vector3 uvw = CalcBaryCoords(v0, v1, v2, pos);
 
             int neighbourIndex = 0;
 
+            //Debug.Log("U: " + uvw.x + " | V: " + uvw.y + " | W: " + uvw.z);
             // If this if check passes, the position is not in our cTriangle
             if (uvw.x < 0 || uvw.y < 0 || uvw.z < 0)
             {
+                
                 // Here we set the index of the cTriangle's neighbours.
                 // The smallest barycentric coordinate shows the direction of the
                 // given position. 
                 if (uvw.x < uvw.y && uvw.x < uvw.z) {neighbourIndex = 0;}
                 else if (uvw.y < uvw.z) {neighbourIndex = 1;}
                 else {neighbourIndex = 2;}
+                Debug.Log("NeighbourIndex: " + neighbourIndex);
 
                 // In the indices.txt file, if a neighbour is -1, it doesn't exist
                 // Here we check if there is a neighbour here
@@ -415,7 +421,7 @@ public class SurfaceScript : MonoBehaviour
                 }
                 // If the value is -1 we know the position is out of bounds
                 Debug.Log("Object out of bounds!");
-                return new CollisionInfo(Vector3.zero, Vector3.zero);
+                return new CollisionInfo(Vector3.zero, Vector3.zero, new TriangleInfo());
             }
             // If we didn't go into the if sentence the position given is inside our cTriangle
             // We need to find the collision point and the normal vector of the triangle
@@ -429,7 +435,7 @@ public class SurfaceScript : MonoBehaviour
             // and then added together to get the collision point
             Vector3 hPos = uvw.x * v0 + uvw.y * v1 + uvw.z * v2;
 
-            return new CollisionInfo(hPos, hNormal);
+            return new CollisionInfo(hPos, hNormal, cTriangle);
         }
     }
 
