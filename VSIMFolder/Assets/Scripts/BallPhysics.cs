@@ -59,29 +59,31 @@ public class BallPhysics : MonoBehaviour
 
         // We're finding the triangle
         cTriangle = scriptRef.CheckCollision(posBefore);   
+        CollisionInfo nHitCol = scriptRef.CheckCollision(posBefore + velBefore * Time.fixedDeltaTime);
 
         // A check to see if we're on a triangle, or if we're out of bounds
         if (cTriangle.hitNormal != Vector3.zero)
         {
             normAfter = cTriangle.hitNormal;
             Vector3 hit = cTriangle.hitPosition;
+            Vector3 nextHitNormal = nHitCol.hitNormal;
             int indexAfter = cTriangle.hitTriangle.index;
 
 
             if (indexBefore == -1) { indexBefore = indexAfter; }
             
-            float distance = Vector3.Dot(posBefore - hit, normAfter);
+            float distance = Vector3.Dot(posBefore - hit, normAfter.normalized);
 
             Debug.Log("Distance: " + distance);
             // This if-sentence is our check to see if we're colliding with a surface
             if (distance <= radius)
             {
                 // We're colliding with the surface
-                nForce = mass * grav * normAfter * Mathf.Cos(normAfter.z);
+                nForce = mass * grav * normAfter.normalized * Mathf.Cos(normAfter.normalized.z);
                 //Debug.Log("nForce: " + nForce);
                 sumForce += nForce;
                 onSurface = true;
-                Debug.Log("IN IF");
+                transform.Translate((normAfter + nextHitNormal).normalized + radius * normAfter.normalized);
             }
 
             // accelerationvector, speed and position (8.12, 8.14, 8.15)
@@ -89,7 +91,7 @@ public class BallPhysics : MonoBehaviour
             velAfter = velBefore +  acceleration * Time.fixedDeltaTime;
             if (onSurface)
             {
-                velAfter = Vector3.ProjectOnPlane(velAfter, normAfter);
+                velAfter = Vector3.ProjectOnPlane(velAfter, normAfter.normalized);
             }
             posAfter = posBefore + velAfter * Time.fixedDeltaTime;
 
@@ -110,10 +112,10 @@ public class BallPhysics : MonoBehaviour
                 indexBefore = indexAfter;
             }
 
-            if (distance < 0)
-            {
-                posAfter += radius * normAfter;
-            }
+            // if (distance < radius)
+            // {
+            //     posAfter += (posAfter - hit) + radius * normAfter.normalized;
+            // }
         }
         else
         {

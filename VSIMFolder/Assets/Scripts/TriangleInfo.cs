@@ -12,7 +12,7 @@ public struct TriangleInfo
     }
 
     public int[] indices { get; }
-    public int [] neighbours { get; }
+    public int[] neighbours { get; }
 
     public Vector3 surfaceUnitNormal { get; }
 
