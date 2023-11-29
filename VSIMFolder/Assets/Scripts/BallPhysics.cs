@@ -45,6 +45,11 @@ public class BallPhysics : MonoBehaviour
         } 
     }
 
+    // void OnDrawGizmos()
+    // {
+    //     Gizmos.DrawSphere(transform.position, radius);
+    // }
+
     // Update is called once per frame
     void FixedUpdate() 
     {
@@ -69,21 +74,21 @@ public class BallPhysics : MonoBehaviour
             Vector3 nextHitNormal = nHitCol.hitNormal;
             int indexAfter = cTriangle.hitTriangle.index;
 
-
             if (indexBefore == -1) { indexBefore = indexAfter; }
             
             float distance = Vector3.Dot(posBefore - hit, normAfter.normalized);
 
-            Debug.Log("Distance: " + distance);
+            //Debug.Log("Distance: " + distance);
             // This if-sentence is our check to see if we're colliding with a surface
-            if (distance <= radius)
+            if (Mathf.Abs(distance) <= radius)
             {
                 // We're colliding with the surface
                 nForce = mass * grav * normAfter.normalized * Mathf.Cos(normAfter.normalized.z);
                 //Debug.Log("nForce: " + nForce);
                 sumForce += nForce;
                 onSurface = true;
-                transform.Translate((normAfter + nextHitNormal).normalized + radius * normAfter.normalized);
+                transform.position = posBefore + (Vector3.Dot(hit - posBefore, normAfter.normalized)) * normAfter.normalized + radius * normAfter.normalized;
+                posBefore = transform.position;
             }
 
             // accelerationvector, speed and position (8.12, 8.14, 8.15)
@@ -104,7 +109,7 @@ public class BallPhysics : MonoBehaviour
                 //Debug.Log("Index changed");
                 //Debug.Log("Before:" + indexBefore + " | After: " + indexAfter);
                 // Here the ball has rolled over to another triangle
-                Vector3 xVec = (normBefore + normAfter) / Vector3.Magnitude(normBefore + normAfter);
+                Vector3 xVec = (normBefore.normalized + normAfter.normalized) / Vector3.Magnitude(normBefore.normalized + normAfter.normalized);
                 velAfter = velBefore - 2 * Vector3.Project(velBefore, xVec);
                 velAfter = Vector3.ProjectOnPlane(velAfter, normAfter);
                 posAfter = posBefore + velAfter * Time.fixedDeltaTime;
@@ -114,7 +119,7 @@ public class BallPhysics : MonoBehaviour
 
             // if (distance < radius)
             // {
-            //     posAfter += (posAfter - hit) + radius * normAfter.normalized;
+            //     posAfter += posAfter + (Vector3.Dot(hit - posAfter, normAfter)) * normAfter + radius * normAfter.normalized;
             // }
         }
         else

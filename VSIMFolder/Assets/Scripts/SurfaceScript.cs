@@ -409,7 +409,7 @@ public class SurfaceScript : MonoBehaviour
                 if (uvw.x < uvw.y && uvw.x < uvw.z) {neighbourIndex = 0;}
                 else if (uvw.y < uvw.z) {neighbourIndex = 1;}
                 else {neighbourIndex = 2;}
-                Debug.Log("NeighbourIndex: " + neighbourIndex);
+                //Debug.Log("NeighbourIndex: " + neighbourIndex);
 
                 // In the indices.txt file, if a neighbour is -1, it doesn't exist
                 // Here we check if there is a neighbour here
@@ -428,7 +428,7 @@ public class SurfaceScript : MonoBehaviour
 
             // The normal is easy enough to get, we've calculated it when the triangle
             // was initially created
-            Vector3 hNormal = cTriangle.surfaceUnitNormal;
+            Vector3 hNormal = cTriangle.surfaceNormal;
 
             // The position however, this needs to be calculated
             // v0, v1 and v2 are Vector3s which get multiplied by the barycentric coordinates
