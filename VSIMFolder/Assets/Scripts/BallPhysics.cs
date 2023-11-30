@@ -1,9 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq.Expressions;
 using System.Text;
 using Unity.VisualScripting;
 using UnityEngine;
+
+/*
+
+	CANDIDATE NUMBER: 840
+
+*/
 
 public class BallPhysics : MonoBehaviour
 {
@@ -83,7 +90,7 @@ public class BallPhysics : MonoBehaviour
             if (Mathf.Abs(distance) <= radius)
             {
                 // We're colliding with the surface
-                nForce = mass * grav * normAfter.normalized * Mathf.Cos(normAfter.normalized.z);
+                nForce = mass * (-gravity) * Mathf.Cos(normAfter.normalized.z);
                 //Debug.Log("nForce: " + nForce);
                 sumForce += nForce;
                 onSurface = true;
@@ -111,7 +118,7 @@ public class BallPhysics : MonoBehaviour
                 // Here the ball has rolled over to another triangle
                 Vector3 xVec = (normBefore.normalized + normAfter.normalized) / Vector3.Magnitude(normBefore.normalized + normAfter.normalized);
                 velAfter = velBefore - 2 * Vector3.Project(velBefore, xVec);
-                velAfter = Vector3.ProjectOnPlane(velAfter, normAfter);
+                velAfter = Vector3.ProjectOnPlane(velAfter, normAfter.normalized);
                 posAfter = posBefore + velAfter * Time.fixedDeltaTime;
                 normBefore = normAfter;
                 indexBefore = indexAfter;
@@ -125,6 +132,7 @@ public class BallPhysics : MonoBehaviour
         else
         {
             Debug.Log("Vector returned null");
+            Destroy(this);
         }
 
 

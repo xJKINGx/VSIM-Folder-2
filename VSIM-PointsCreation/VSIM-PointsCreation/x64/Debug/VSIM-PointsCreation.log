@@ -1,0 +1,7 @@
+﻿  main.cpp
+D:\Visual Studio Projects\VSIM-PointsCreation\VSIM-PointsCreation\main.cpp(1,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\Visual Studio Projects\VSIM-PointsCreation\VSIM-PointsCreation\main.h(5,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\Visual Studio Projects\VSIM-PointsCreation\VSIM-PointsCreation\main.h(6,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\Visual Studio Projects\VSIM-PointsCreation\VSIM-PointsCreation\main.h(7,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+D:\Visual Studio Projects\VSIM-PointsCreation\VSIM-PointsCreation\main.h(8,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  VSIM-PointsCreation.vcxproj -> D:\Visual Studio Projects\VSIM-PointsCreation\x64\Debug\VSIM-PointsCreation.exe

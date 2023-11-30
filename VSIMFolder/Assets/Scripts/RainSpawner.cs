@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+
+	CANDIDATE NUMBER: 840
+
+*/
+
 public class RainSpawner : MonoBehaviour
 {
     [SerializeField] float xRadius = 50.0f;

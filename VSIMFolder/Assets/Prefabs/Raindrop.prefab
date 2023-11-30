@@ -97,5 +97,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mass: 0.1
-  radius: 0.5
+  radius: 0.00005
   surfaceRef: {fileID: 0}
